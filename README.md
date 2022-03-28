@@ -8,7 +8,7 @@ To install the NPM package required for interacting with the MongoDB database:
     npm install -g mongodb
 
 ## Database Generator
-Generates the database structure
+Generates the database, including the collections and the associated validators:
 
     node PleiadesDatabaseGenerator.js {MongoDB_Server_URL}
 
