@@ -8,16 +8,19 @@ To install the NPM package required for interacting with the MongoDB database:
     npm install -g mongodb
 
 ## Database Generator
+
 Generates the database, including the collections and the associated validators:
 
     node PleiadesDatabaseGenerator.js {MongoDB_Server_URL}
 
 
-## Database Reader
+## Database Reader (TODO)
+
 Serializes the contents of the database into a JSON file.
 
-## Database Writer
+## Database Writer (TODO)
+
 Deserializes the contents of a JSON file into the database.
 
-## Database Random Data Generator
+## Database Random Data Generator (TODO)
 Generates data into the database.
