@@ -3,7 +3,7 @@ A collection of utilities to manage the PLEIADES MongoDB database.
 
 To run the different scripts, it is necessary to install the [Node.js environment](https://nodejs.org/).
 
-To install the NPM package required for interacting with the MongoDB databases: 
+To install the NPM package required for interacting with the MongoDB database: 
 
     npm install -g mongodb
 
