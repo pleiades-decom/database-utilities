@@ -5,7 +5,7 @@
 
 // ----------------------------------------------------------- GLOBAL VARIABLES
 
-// To handle the data I/O
+// To handle the I/O
 let fs = require("fs"),
 	readline = require('readline'),
 	text = {encoding: "utf8"},
@@ -14,9 +14,9 @@ let fs = require("fs"),
 	jsonSchema = {};
 
 // To handle the database connection
-let mongoServerUrl = "mongodb://localhost:27017/";
-let mongoClient = require('mongodb').MongoClient;
-let databaseName = "PLEIADES";
+let mongoClient = require('mongodb').MongoClient,
+	mongoServerUrl = "mongodb://localhost:27017/",
+	databaseName = "PLEIADES";
 
 // To handle the different tasks
 let currentTask;
@@ -57,7 +57,6 @@ function updateTask (u) { log("\t" + currentTask + "... " + u + "\r"); }
 
 /** Ends a task. */
 function endTask() { log("\t"+ currentTask +"... DONE\n"); currentTask = null; }
-
 
 
 // ---------------------------------------------------------- UTILITY FUNCTIONS
@@ -101,7 +100,6 @@ async function generateDatabase() {
 			_id: { bsonType: "objectId" }
 		};
 		for (let propertyName in classDefinition.properties) {
-
 			let propertyDefinition = classDefinition.properties[propertyName];
 			let validatorProperty = {};
 			validatorProperty.title = propertyDefinition.title || propertyName;
@@ -117,7 +115,6 @@ async function generateDatabase() {
 			else switch (validatorProperty.bsonType) {
 				case "integer": validatorProperty.bsonType = "int"; break;
 			}
-
 
 			// Save the validator property
 			validatorProperties[propertyName] = validatorProperty;
