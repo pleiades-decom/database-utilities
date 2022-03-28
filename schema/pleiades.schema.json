@@ -1,0 +1,1293 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"$comment": "The PLEIADES taxonomy bundled into a JSON Schema file.",
+	"definitions": {
+		"PlantData": {
+			"title": "PlantData",
+			"description": "General information about the plant.",
+			"properties": {
+				"SomeProperty": {
+					"description": "An example string property",
+					"type": "string"
+				}
+			}
+		},
+		"PlantData.Space": {
+			"title": "Space",
+			"description": "Tom-Robert: how to ensure that 3D models and data that occupy the same space uses the same coordinate system.\nWe have suggested a concept of a “Space” that binds it together.",
+			"properties": {}
+		},
+		"PlantData.Space.Cartesian": {
+			"title": "Cartesian",
+			"description": "Defines a physical real world cartesian space. Can we use something\nfrom IFC: https://standards.buildingsmart.org/IFC/RELEASE/IFC2x3/TC1/HTML/ifcgeometryresource/lexical/ifcaxis2placement3d.htm,\nhttp://docs.buildingsmartalliance.org/MVD_WSIE/schema/ifcproductextension/lexical/ifcspace.htm\nDusan: Suggest renaming to 3DCartesian and removing DimensionCount property. Then we can define a \"point\" with x/y/z values.\nIn case we'll need other cartesian space definitions we can create e.g. 2DCartesian class.",
+			"properties": {
+				"SpatialContextDocumentId": {
+					"description": "reference to asset (a file) that points to a 3D model"
+				},
+				"DimensionCount": {
+					"description": "number of dimensions in range [1,3]",
+					"type": "number",
+					"min": "1",
+					"max": "3"
+				},
+				"Units": {
+					"description": "meter, feet, whatever",
+					"type": "string"
+				},
+				"Description": {
+					"description": "Describes where the origo and axis is in the real world.",
+					"type": "string"
+				}
+			}
+		},
+		"PlantData.SiteStructure": {
+			"title": "SiteStructure",
+			"properties": {}
+		},
+		"PlantData.SiteStructure.Buildings": {
+			"title": "Buildings",
+			"description": "Information about buildings in the plant",
+			"properties": {
+				"Name": {
+					"type": "string"
+				},
+				"IFCObject": {
+					"description": "reference to a model of the building",
+					"$ref": "#/definitions/External.IFCObjectReference"
+				}
+			}
+		},
+		"PlantData.SiteStructure.Floors": {
+			"title": "Floors",
+			"description": "Information about floors in the buildings",
+			"properties": {
+				"BuildingId": {},
+				"Number": {
+					"description": "Readable identification (Number) of the floor",
+					"type": "string"
+				},
+				"IFCObject": {
+					"description": "reference to a model of the floor",
+					"$ref": "#/definitions/External.IFCObjectReference"
+				},
+				"Elevation": {
+					"description": "Elevation of the floor relative to the ground. Can be negative.",
+					"type": "integer",
+					"unit": "m"
+				}
+			}
+		},
+		"PlantData.SiteStructure.Rooms": {
+			"title": "Rooms",
+			"description": "Information about rooms in all buildings",
+			"properties": {
+				"FloorId": {},
+				"Number": {
+					"description": "Readable identification (Number) of the room",
+					"type": "string"
+				},
+				"IFCObject": {
+					"description": "reference to a model of the room",
+					"$ref": "#/definitions/External.IFCObjectReference"
+				},
+				"Width": {
+					"type": "integer",
+					"unit": "m"
+				},
+				"Height": {
+					"type": "integer",
+					"unit": "m"
+				},
+				"Length": {
+					"type": "integer",
+					"unit": "m"
+				}
+			}
+		},
+		"PlantData.Documents": {
+			"title": "Documents",
+			"description": "All documents related to the plant.",
+			"properties": {
+				"Type": {
+					"description": "Type of the document",
+					"type": "string"
+				},
+				"File": {
+					"description": "Reference to asset (a file) that points to a document",
+					"type": "string"
+				},
+				"SpaceId": {
+					"description": "For documents that contains coordinates. Defines which space the coordinates belong to."
+				},
+				"ExtractedData": {
+					"description": "Arbitrarily structured object containing format-specific data extracted from the document.\nExample: In case of an .ifc file, the IFC data would be here.",
+					"type": "object"
+				}
+			}
+		},
+		"PlantData.NuclideVectors": {
+			"title": "NuclideVectors",
+			"description": "Definition of nuclide vectors used for describing various plant's objects and their activities or contaminations.",
+			"properties": {
+				"Name": {
+					"description": "Name of the vector, can be used e.g. for human-readable description of the vector's content.",
+					"type": "string"
+				},
+				"Isotopes": {
+					"description": "List of isotopes and their relative amounts in the nuclide vector.",
+					"type": "array"
+				}
+			}
+		},
+		"PlantData.RadiationSources": {
+			"title": "RadiationSources",
+			"description": "List of radiation sources inside the plant.",
+			"properties": {
+				"Shape": {
+					"description": "Definition of the source's shape",
+					"$ref": "#/definitions/External.Shape"
+				},
+				"Location": {
+					"description": "Location of the [0, 0, 0] point of the radiation source.",
+					"$ref": "#/definitions/External.CartesianPoint"
+				},
+				"MeasurementIds": {
+					"description": "List of measurements performed over this radiation source.",
+					"type": "array"
+				}
+			}
+		},
+		"PlantData.Measurements": {
+			"title": "Measurements",
+			"properties": {}
+		},
+		"PlantData.Measurements.CartesianMeasurements": {
+			"title": "CartesianMeasurements",
+			"description": "A set where each element is a cartesian coordinate associated with a single values.",
+			"properties": {
+				"MeasuredQuantity": {
+					"description": "What is measured, (Dose, DoseRate, Activity, Temperature, ...)",
+					"$ref": "#/definitions/External.MeasuredQuantity"
+				},
+				"Description": {
+					"description": "Optional description",
+					"type": "string"
+				},
+				"MeasurementTime": {
+					"description": "When the measurement has been taken.",
+					"type": "object"
+				},
+				"SpaceId": {},
+				"RoomId": {
+					"description": "In which room is the measurement was taken"
+				},
+				"MethodId": {
+					"description": "Optional reference to the Method used to do the measurements"
+				},
+				"Coordinate": {
+					"$ref": "#/definitions/External.CartesianPoint"
+				},
+				"Value": {
+					"$ref": "#/definitions/External.MeasuredValue"
+				}
+			}
+		},
+		"PlantData.Measurements.CartesianMeasurementSets": {
+			"title": "CartesianMeasurementSets",
+			"description": "A set where each element is a cartesian coordinate associated with a single values.",
+			"properties": {
+				"MeasuredQuantity": {
+					"description": "What is measured, (Dose, DoseRate, Activity, Temperature, ...)",
+					"$ref": "#/definitions/External.MeasuredQuantity"
+				},
+				"Description": {
+					"description": "Optional description",
+					"type": "string"
+				},
+				"MeasurementTime": {
+					"description": "When the measurements has been taken.",
+					"type": "object"
+				},
+				"SpaceId": {},
+				"MethodId": {
+					"description": "Optional reference to the Method used to do the measurements"
+				},
+				"RoomIds": {
+					"description": "In which rooms was the measurements taken. Order of items must correspond to Coordinates and Values properties.",
+					"type": "array"
+				},
+				"Coordinates": {
+					"$ref": "#/definitions/External.CartesianPoint"
+				},
+				"Values": {
+					"$ref": "#/definitions/External.MeasuredValue"
+				}
+			}
+		},
+		"PlantData.Measurements.PartMeasurements": {
+			"title": "PartMeasurements",
+			"description": "Class for storing measurement samples on parts that is associated with that part, but do not have a clear coordinate(s).",
+			"properties": {
+				"MethodId": {
+					"description": "Optional reference to the Method used to do the measurements"
+				},
+				"MeasuredQuantity": {
+					"description": "What is measured, (Dose, DoseRate, Activity, Temperature, ...)",
+					"$ref": "#/definitions/External.MeasuredQuantity"
+				},
+				"Description": {
+					"description": "Optional description",
+					"type": "string"
+				},
+				"MeasurementTime": {
+					"description": "When the measurement has been taken.",
+					"type": "object"
+				},
+				"Value": {
+					"$ref": "#/definitions/External.MeasuredValue"
+				}
+			}
+		},
+		"Events": {
+			"title": "Events",
+			"description": "List of various events that occured during the decommissioning planning.\nAn example: A Collada file must be created from an IFC model for VTT's XR toolkit\nin order to create VirtualPostIt. Both Collada file and IFC model are stored\nin the PlantData.Documents. This class can be used to store the information\nabout from which IFC model is a certain Collada file created.",
+			"properties": {
+				"DateTime": {
+					"description": "When did the event occur.",
+					"type": "object"
+				},
+				"Type": {
+					"description": "Type of an event. Can have any value.\nIn this spec the values are not restricted.<br/>\nHowever, this property can be used for various filtering/querying\npurposes and thus should be brief and agreed by partners\nusing a specific type of event.<br/>\nEvent's type can determine the structure of RelatedRecordIds property.\nIn this example, the first related RecordId is the original IFC model and the\nsecond is the corresponding Collada file.",
+					"type": "string"
+				},
+				"Message": {
+					"description": "Any string value containing more verbose message (comparing to Type)",
+					"type": "string"
+				},
+				"RelatedRecordIds": {
+					"$ref": "#/definitions/External.ClassesAndRecordIds"
+				}
+			}
+		},
+		"Applications": {
+			"title": "Applications",
+			"properties": {
+				"Name": {
+					"type": "string"
+				},
+				"Category": {
+					"description": "Categorization of the application for better querying/filtering experience.",
+					"$ref": "#/definitions/External.ClassNameReference"
+				}
+			}
+		},
+		"Applications.Decommissioning": {
+			"title": "Decommissioning",
+			"description": "...",
+			"properties": {}
+		},
+		"Applications.SizeReduction": {
+			"title": "SizeReduction",
+			"description": "...",
+			"properties": {}
+		},
+		"Applications.Decontamination": {
+			"title": "Decontamination",
+			"description": "...",
+			"properties": {}
+		},
+		"Tasks": {
+			"title": "Tasks",
+			"description": "Single task to be performed",
+			"properties": {
+				"Name": {
+					"description": "Human-readable name of the task",
+					"type": "string"
+				},
+				"Number": {
+					"description": "Number of the task",
+					"type": "string"
+				},
+				"Definition": {
+					"description": "Definition of the task",
+					"type": "string"
+				},
+				"ParentTaskId": {
+					"type": "string"
+				},
+				"Start": {
+					"description": "Date and time of task start.",
+					"type": "object"
+				},
+				"Duration": {
+					"description": "Operation duration in hours.",
+					"type": "integer"
+				},
+				"TeamId": {
+					"description": "Reference to the team performing the task"
+				},
+				"ApplicationId": {
+					"description": "Type of the application that is being performed in this task."
+				},
+				"WorkplaceId": {
+					"description": ">"
+				},
+				"AssetIds": {
+					"description": ">",
+					"$ref": "#/definitions/External.ClassesAndRecordIds"
+				},
+				"MethodIds": {
+					"type": "array"
+				},
+				"ExposedWorkers": {
+					"description": "Number of workers exposed during the operation",
+					"type": "number"
+				}
+			}
+		},
+		"Methods": {
+			"title": "Methods",
+			"properties": {
+				"Name": {
+					"description": "Human readable name of the method.",
+					"type": "string"
+				},
+				"Description": {
+					"description": "More verbose description of the method.",
+					"type": "string"
+				},
+				"Category": {
+					"description": "Categorization of the method for better querying/filtering experience.",
+					"$ref": "#/definitions/External.ClassNameReference"
+				},
+				"ApplicationIds": {
+					"type": "array"
+				},
+				"RoleIds": {
+					"type": "array"
+				},
+				"ToolIds": {
+					"description": "What tool(s) is used to perform the task using this method.",
+					"type": "array"
+				},
+				"Rate": {
+					"type": "integer"
+				},
+				"RateUnit": {
+					"type": "string"
+				}
+			}
+		},
+		"Workplaces": {
+			"title": "Workplaces",
+			"description": "List of workplaces and associated data",
+			"properties": {
+				"Name": {
+					"type": "string"
+				},
+				"RoomId": {
+					"description": "In which room is the workplace is located"
+				},
+				"ExposureType": {
+					"description": "Define if exposure is constant (µSv/h) or depending on dose calculation (% of exposure)",
+					"type": "string"
+				},
+				"ExposurePercentage": {
+					"description": "This property defines the percentage of calculated dose rate at the avatar position to be taken by the worker.\nFor example, we define that the operator in the airlock behind takes only 20% of the calculated dose rate.<br/>\n<br/>\nThis property is used only when ExposureType = Percentage.",
+					"type": "number",
+					"min": "0",
+					"max": "100",
+					"unit": "%"
+				},
+				"ExposureConstant": {
+					"description": "Similar to ExposurePercentage, this property defines the constant dose uptake by the worker at the workplace.<br/>\n<br/>\nThis property is used only when ExposureType = Constant.",
+					"type": "integer",
+					"unit": "µSv/h"
+				}
+			}
+		},
+		"Schedule": {
+			"title": "Schedule",
+			"description": "Schedule of the Tasks to be performed",
+			"properties": {
+				"Name": {
+					"type": "string"
+				},
+				"TaskIds": {
+					"description": "List of Tasks performed in this schedule. The order of tasks is important.",
+					"type": "array"
+				}
+			}
+		},
+		"Assets": {
+			"title": "Assets",
+			"description": "",
+			"properties": {}
+		},
+		"Assets.Tangibles": {
+			"title": "Tangibles",
+			"properties": {}
+		},
+		"Assets.Tangibles.Parts": {
+			"title": "Parts",
+			"properties": {
+				"ParentPartId": {
+					"description": "In case of more complex systems, this is the way to define hierarchical structure of parts."
+				},
+				"ParentWasteId": {
+					"description": "If this Part is already a waste, using this Id we can reference to a waste package."
+				},
+				"SiteStructureId": {
+					"description": "In which building/floor/room is the part (or the whole object) located"
+				},
+				"IFCObject": {
+					"description": "reference to a model of the part",
+					"$ref": "#/definitions/External.IFCObjectReference"
+				},
+				"Mass": {
+					"description": "Mass",
+					"type": "integer",
+					"unit": "kg"
+				},
+				"Volume": {
+					"description": "Volume",
+					"type": "integer",
+					"unit": "m3"
+				},
+				"InnerSurface": {
+					"description": "Inner surface",
+					"type": "integer",
+					"unit": "m2"
+				},
+				"OuterSurface": {
+					"description": "Outer surface",
+					"type": "integer",
+					"unit": "m2"
+				},
+				"MaterialId": {},
+				"MeasurementIds": {
+					"description": ">",
+					"$ref": "#/definitions/External.Measurements"
+				},
+				"WasteCategory": {}
+			}
+		},
+		"Assets.Tangibles.Tools": {
+			"title": "Tools",
+			"description": "List of tool used to perform the task. E.g. Robot or telemanipulator to be simulated.",
+			"properties": {
+				"Name": {
+					"description": "Name of the tool.",
+					"type": "string"
+				},
+				"ManufacturerName": {
+					"description": "Name of the tool manufacturer",
+					"type": "string"
+				},
+				"URDFKinematicDocumentId": {}
+			}
+		},
+		"Assets.Tangibles.Equipments": {
+			"title": "Equipments",
+			"description": "List of equipments.",
+			"properties": {
+				"Name": {
+					"description": "Name of the equipment.",
+					"type": "string"
+				},
+				"ManufacturerName": {
+					"description": "Name of the equipment manufacturer",
+					"type": "string"
+				},
+				"URDFKinematicDocumentId": {}
+			}
+		},
+		"Assets.Intangibles": {
+			"title": "Intangibles",
+			"properties": {}
+		},
+		"Assets.Intangibles.VirtualPostIts": {
+			"title": "VirtualPostIts",
+			"description": "Virtual Post-it notes generated by XR workflow",
+			"properties": {
+				"UserId": {},
+				"Type": {
+					"type": "string"
+				},
+				"AssetBundleDocumentId": {
+					"description": "Reference to a document containing asset bundle data."
+				},
+				"IFCModelDocumentId": {
+					"description": "Reference to an IFC model from which the Asset Bundle was created."
+				},
+				"Notes": {
+					"type": "array"
+				}
+			}
+		},
+		"Assets.Intangibles.SpatialTemporals": {
+			"title": "SpatialTemporals",
+			"description": "Spatial-temporal data generated by XR workflow",
+			"properties": {
+				"UserId": {},
+				"Type": {
+					"type": "string"
+				},
+				"AssetBundleDocumentId": {
+					"description": "Reference to a document containing asset bundle data."
+				},
+				"IFCModelDocumentId": {
+					"description": "Reference to an IFC model from which the Asset Bundle was created."
+				},
+				"DataPoints": {
+					"type": "array"
+				}
+			}
+		},
+		"Assets.Intangibles.Calculations": {
+			"title": "Calculations",
+			"properties": {}
+		},
+		"Assets.Intangibles.Calculations.DoseUptake": {
+			"title": "DoseUptake",
+			"description": "Cumulative dose to a person or equipment calculated in the simulations",
+			"properties": {
+				"TaskId": {},
+				"ActorId": {},
+				"MeasuredQuantity": {
+					"description": "What does the Value represent.\nExample: For calculators there are different ways to convert photon energy into dose, for example Effective Dose, Ambient Dose Equivalent or KERMA.",
+					"$ref": "#/definitions/External.MeasuredQuantity"
+				},
+				"Value": {
+					"description": "Calculated dose uptake",
+					"type": "integer",
+					"unit": "Sv / Gy"
+				},
+				"CartesianPoint": {
+					"$ref": "#/definitions/External.CartesianPoint"
+				}
+			}
+		},
+		"Materials": {
+			"title": "Materials",
+			"description": "List of Material characteristics",
+			"properties": {
+				"Name": {
+					"type": "string"
+				},
+				"VolumicMass": {
+					"description": "Volumic mass",
+					"type": "integer",
+					"unit": "g/cm3"
+				},
+				"ChemicalComposition": {
+					"description": "Chemical composition of the material",
+					"type": "object"
+				}
+			}
+		},
+		"Regulatory": {
+			"title": "Regulatory",
+			"description": "Definition of regulatory-specific data",
+			"properties": {}
+		},
+		"Regulatory.WasteCategories": {
+			"title": "WasteCategories",
+			"description": "List of waste categories",
+			"properties": {
+				"Name": {
+					"description": "Name of the waste category",
+					"type": "string"
+				}
+			}
+		},
+		"Regulatory.ClearanceLimits": {
+			"title": "ClearanceLimits",
+			"description": "Definition of clearance limits.",
+			"properties": {}
+		},
+		"Wastes": {
+			"title": "Wastes",
+			"description": "Definition of waste",
+			"properties": {}
+		},
+		"Wastes.Packages": {
+			"title": "Packages",
+			"description": "Definition of waste packages.",
+			"properties": {
+				"Name": {
+					"type": "string"
+				},
+				"Mass": {
+					"description": "Mass of the empty package",
+					"type": "integer",
+					"unit": "kg"
+				},
+				"AdmissibleMass": {
+					"description": "Admissible total mass of the filled package",
+					"type": "integer",
+					"unit": "kg"
+				},
+				"ExternalVolume": {
+					"description": "External volume of the waste package",
+					"type": "integer",
+					"unit": "m3"
+				},
+				"AdmissibleVolume": {
+					"description": "\"?\"",
+					"type": "integer",
+					"unit": "m3"
+				},
+				"Costs": {
+					"description": "\"?\"",
+					"type": "string"
+				}
+			}
+		},
+		"Wastes.ManagementProcesses": {
+			"title": "ManagementProcesses",
+			"description": "Operations (?? {{Tasks}} ??) to be done to manage a waste",
+			"properties": {
+				"Name": {
+					"description": "Name of the treatment process",
+					"type": "string"
+				},
+				"RegulatoryNationalContextId": {
+					"description": "Reference to the national regulatory context"
+				},
+				"TreatmentOperationIds": {
+					"description": "List of operations performed over a weste",
+					"type": "array"
+				},
+				"WorklplaceId": {
+					"description": ">"
+				}
+			}
+		},
+		"Wastes.TreatmentOperations": {
+			"title": "TreatmentOperations",
+			"description": "Definition of unit operations to define a waste treatment process",
+			"properties": {
+				"Type": {
+					"description": "Type of the operation",
+					"type": "string"
+				},
+				"Fraction of waste in package": {
+					"type": "integer"
+				},
+				"PackingEfficiency": {
+					"description": "1 = use 100% of the useful package volume, 0.5 = use 50% of the useful package volume",
+					"type": "integer"
+				},
+				"OutputWastePackage": {
+					"description": "Waste package type used in an output of this operation."
+				}
+			}
+		},
+		"Actors": {
+			"title": "Actors",
+			"properties": {}
+		},
+		"Actors.Persons": {
+			"title": "Persons",
+			"description": "An individual who conducts the operations with the application. This should be seen more a \"login\" procedure.",
+			"properties": {
+				"GivenName": {
+					"type": "string"
+				},
+				"FamilyName": {
+					"type": "string"
+				},
+				"AvailableRoleIds": {
+					"type": "array"
+				}
+			}
+		},
+		"Actors.Robots": {
+			"title": "Robots",
+			"description": "List of available Robots",
+			"properties": {
+				"Name": {
+					"type": "string"
+				},
+				"ManufacturerName": {
+					"type": "string"
+				},
+				"MaintenanceProportion": {
+					"description": "Percentage of additionnal time of maintenance over an activity",
+					"type": "integer",
+					"unit": "%"
+				}
+			}
+		},
+		"Actors.Roles": {
+			"title": "Roles",
+			"description": "List of roles available for the persons",
+			"properties": {
+				"Name": {
+					"type": "string"
+				},
+				"EfficiencyCoefficient": {
+					"description": "100% is normal, 200% with hard working conditions",
+					"type": "integer",
+					"unit": "%"
+				},
+				"UnproductiveTime": {
+					"type": "integer",
+					"unit": "hrs/d"
+				},
+				"EffectiveWorkdayHours": {
+					"description": "Maximum work duration per day. E.g., specific legislations obliges to work only 3 hourse per day in a mururoa suit.<br/>\n<br/>\nNote: This is EFFECTIVE working time according to the regulation of the outfit worn and not the total working time of a day.",
+					"type": "integer",
+					"unit": "hrs/d"
+				}
+			}
+		},
+		"Actors.Teams": {
+			"title": "Teams",
+			"description": "Definition of a team consisting of Persons (a.k.a. working groups)",
+			"properties": {
+				"Name": {
+					"type": "string"
+				},
+				"MemberIds": {
+					"description": ">",
+					"$ref": "#/definitions/External.TeamMember"
+				},
+				"EffectiveWorkdayHours": {
+					"type": "integer",
+					"unit": "hrs/d"
+				},
+				"WorkerExposure": {
+					"description": "Exposure of human operators to maintain the robot.",
+					"type": "integer",
+					"unit": "µSv/h"
+				}
+			}
+		},
+		"Costs": {
+			"title": "Costs",
+			"description": "Top-level class for cost data",
+			"properties": {}
+		},
+		"Costs.Salaries": {
+			"title": "Salaries",
+			"properties": {
+				"RoleId": {},
+				"HourlySalary": {
+					"description": "A hourly salary for this role",
+					"type": "integer",
+					"unit": "€/h"
+				}
+			}
+		},
+		"Costs.Tools": {
+			"title": "Tools",
+			"properties": {
+				"ToolId": {},
+				"ProcurementPrice": {
+					"description": "Procurement price of the tool.",
+					"type": "integer",
+					"min": "0"
+				},
+				"PartialDeprecation": {
+					"description": "A percentage of total ProcurementPrice used to calculate costs for tool deprecation.",
+					"type": "integer",
+					"min": "0",
+					"max": "100",
+					"unit": "%"
+				},
+				"HourlyCost": {
+					"description": "A cost per hour used to calculate costs for tool usage price.",
+					"type": "integer",
+					"min": "0",
+					"unit": "€/h"
+				}
+			}
+		},
+		"Costs.ISDC": {
+			"title": "ISDC",
+			"description": "Costs presented in ISDC structure",
+			"properties": {
+				"ISDCNumber": {
+					"type": "string"
+				},
+				"Labour": {
+					"description": "Labour costs",
+					"type": "integer",
+					"min": "0",
+					"unit": "€"
+				},
+				"Investments": {
+					"description": "Investments",
+					"type": "integer",
+					"min": "0",
+					"unit": "€"
+				},
+				"Expenses": {
+					"description": "Expenses",
+					"type": "integer",
+					"min": "0",
+					"unit": "€"
+				},
+				"Contingency": {
+					"description": "Contingency",
+					"type": "integer",
+					"min": "0",
+					"unit": "€"
+				},
+				"TaskIds": {
+					"description": "Which tasks contribute to this cost element",
+					"type": "array"
+				}
+			}
+		},
+		"External": {
+			"title": "External",
+			"properties": {}
+		},
+		"External.CartesianPoint": {
+			"title": "CartesianPoint",
+			"description": "A point defined by its coordinates in a two or three dimensional rectangular Cartesian coordinate system, or in a two dimensional parameter space. The entity is defined in a two or three dimensional space.\nSee also IfcCartesianPoint (https://standards.buildingsmart.org/IFC/RELEASE/IFC2x3/TC1/HTML/ifcgeometryresource/lexical/ifccartesianpoint.htm)",
+			"properties": {}
+		},
+		"External.MeasuredQuantity": {
+			"title": "MeasuredQuantity",
+			"properties": {
+				"Quantity": {
+					"description": "What is measured, (Dose, DoseRate, Activity, Temperature, ...)"
+				},
+				"Unit": {
+					"description": "The unit for the values. (mSv, mSv/h, GBq, C).",
+					"type": "string"
+				}
+			}
+		},
+		"External.MeasuredValue": {
+			"title": "MeasuredValue",
+			"properties": {
+				"Scalar": {
+					"type": "integer"
+				},
+				"List": {
+					"type": "array"
+				},
+				"NuclideBased": {
+					"type": "string"
+				},
+				"Activity": {
+					"type": "object"
+				}
+			}
+		},
+		"External.IFCObjectReference": {
+			"title": "IFCObjectReference",
+			"properties": {
+				"Model": {
+					"description": "reference to a IFC model where the object is visualized"
+				},
+				"IfcGUID": {
+					"description": "GUID of the object in the IFC model",
+					"type": "string"
+				}
+			}
+		},
+		"External.ClassesAndRecordIds": {
+			"title": "ClassesAndRecordIds",
+			"properties": {
+				"Class": {
+					"description": "Name of the class which is related to this item.",
+					"type": "string"
+				},
+				"RecordId": {
+					"description": "ID of the record which represents the item.",
+					"type": "string"
+				}
+			}
+		},
+		"External.TeamMember": {
+			"title": "TeamMember",
+			"properties": {
+				"MemberType": {
+					"description": "Name of the class which represents the type of the member.",
+					"type": "string"
+				},
+				"MemberId": {
+					"description": "ID of the record which represents the team member.",
+					"type": "string"
+				}
+			}
+		},
+		"External.Measurements": {
+			"title": "Measurements",
+			"properties": {
+				"MeasurementType": {
+					"description": "Name of the class which represents the measurement.",
+					"type": "string"
+				},
+				"MeasurementId": {
+					"description": "ID of the record which represents the measurement.",
+					"type": "string"
+				}
+			}
+		},
+		"External.Shape": {
+			"title": "Shape",
+			"properties": {
+				"Shape": {
+					"description": "Type of the shape",
+					"type": "string"
+				},
+				"Width": {
+					"description": "Width of the shape, if applicable",
+					"type": "integer",
+					"min": "0"
+				},
+				"Height": {
+					"description": "Height of the shape, if applicable",
+					"type": "integer",
+					"min": "0"
+				},
+				"Length": {
+					"description": "Length of the shape, if applicable",
+					"type": "integer",
+					"min": "0"
+				},
+				"Radius": {
+					"description": "Radius of the shape, if applicable",
+					"type": "integer",
+					"min": "0"
+				}
+			}
+		},
+		"External.ClassNameReference": {
+			"title": "ClassNameReference",
+			"description": "Contains dot-notated name of any existing API class.<br/>\n<br/>\nUseful e.g. for categorization / characterization of a record if there is\nno sub-classes available or the sub-classes structure can be dynamic.<br/>\n<br/>\nE.g. in {{Methods}} or {{Applications}}.",
+			"properties": {}
+		},
+		"External.SampleBase64Binary": {
+			"title": "SampleBase64Binary",
+			"description": "An example showing that there is a Base64Binary property type available",
+			"properties": {}
+		},
+		"External.RecordInfo": {
+			"title": "RecordInfo",
+			"properties": {
+				"CreatedOn": {
+					"type": "object"
+				},
+				"CreatedBy": {
+					"type": "string"
+				},
+				"ModifiedOn": {
+					"type": "object"
+				},
+				"ModifiedBy": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"properties": {
+		"PlantData": {
+			"description": "The global list of PlantData instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/PlantData" }
+		},
+		"Space": {
+			"description": "The global list of Space instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/PlantData.Space" }
+		},
+		"Cartesian": {
+			"description": "The global list of Cartesian instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/PlantData.Space.Cartesian" }
+		},
+		"SiteStructure": {
+			"description": "The global list of SiteStructure instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/PlantData.SiteStructure" }
+		},
+		"Buildings": {
+			"description": "The global list of Buildings instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/PlantData.SiteStructure.Buildings" }
+		},
+		"Floors": {
+			"description": "The global list of Floors instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/PlantData.SiteStructure.Floors" }
+		},
+		"Rooms": {
+			"description": "The global list of Rooms instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/PlantData.SiteStructure.Rooms" }
+		},
+		"Documents": {
+			"description": "The global list of Documents instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/PlantData.Documents" }
+		},
+		"NuclideVectors": {
+			"description": "The global list of NuclideVectors instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/PlantData.NuclideVectors" }
+		},
+		"RadiationSources": {
+			"description": "The global list of RadiationSources instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/PlantData.RadiationSources" }
+		},
+		"Measurements": {
+			"description": "The global list of Measurements instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/External.Measurements" }
+		},
+		"CartesianMeasurements": {
+			"description": "The global list of CartesianMeasurements instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/PlantData.Measurements.CartesianMeasurements" }
+		},
+		"CartesianMeasurementSets": {
+			"description": "The global list of CartesianMeasurementSets instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/PlantData.Measurements.CartesianMeasurementSets" }
+		},
+		"PartMeasurements": {
+			"description": "The global list of PartMeasurements instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/PlantData.Measurements.PartMeasurements" }
+		},
+		"Events": {
+			"description": "The global list of Events instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Events" }
+		},
+		"Applications": {
+			"description": "The global list of Applications instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Applications" }
+		},
+		"Decommissioning": {
+			"description": "The global list of Decommissioning instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Applications.Decommissioning" }
+		},
+		"SizeReduction": {
+			"description": "The global list of SizeReduction instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Applications.SizeReduction" }
+		},
+		"Decontamination": {
+			"description": "The global list of Decontamination instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Applications.Decontamination" }
+		},
+		"Tasks": {
+			"description": "The global list of Tasks instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Tasks" }
+		},
+		"Methods": {
+			"description": "The global list of Methods instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Methods" }
+		},
+		"Workplaces": {
+			"description": "The global list of Workplaces instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Workplaces" }
+		},
+		"Schedule": {
+			"description": "The global list of Schedule instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Schedule" }
+		},
+		"Assets": {
+			"description": "The global list of Assets instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Assets" }
+		},
+		"Tangibles": {
+			"description": "The global list of Tangibles instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Assets.Tangibles" }
+		},
+		"Parts": {
+			"description": "The global list of Parts instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Assets.Tangibles.Parts" }
+		},
+		"Tools": {
+			"description": "The global list of Tools instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Costs.Tools" }
+		},
+		"Equipments": {
+			"description": "The global list of Equipments instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Assets.Tangibles.Equipments" }
+		},
+		"Intangibles": {
+			"description": "The global list of Intangibles instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Assets.Intangibles" }
+		},
+		"VirtualPostIts": {
+			"description": "The global list of VirtualPostIts instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Assets.Intangibles.VirtualPostIts" }
+		},
+		"SpatialTemporals": {
+			"description": "The global list of SpatialTemporals instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Assets.Intangibles.SpatialTemporals" }
+		},
+		"Calculations": {
+			"description": "The global list of Calculations instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Assets.Intangibles.Calculations" }
+		},
+		"DoseUptake": {
+			"description": "The global list of DoseUptake instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Assets.Intangibles.Calculations.DoseUptake" }
+		},
+		"Materials": {
+			"description": "The global list of Materials instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Materials" }
+		},
+		"Regulatory": {
+			"description": "The global list of Regulatory instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Regulatory" }
+		},
+		"WasteCategories": {
+			"description": "The global list of WasteCategories instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Regulatory.WasteCategories" }
+		},
+		"ClearanceLimits": {
+			"description": "The global list of ClearanceLimits instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Regulatory.ClearanceLimits" }
+		},
+		"Wastes": {
+			"description": "The global list of Wastes instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Wastes" }
+		},
+		"Packages": {
+			"description": "The global list of Packages instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Wastes.Packages" }
+		},
+		"ManagementProcesses": {
+			"description": "The global list of ManagementProcesses instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Wastes.ManagementProcesses" }
+		},
+		"TreatmentOperations": {
+			"description": "The global list of TreatmentOperations instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Wastes.TreatmentOperations" }
+		},
+		"Actors": {
+			"description": "The global list of Actors instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Actors" }
+		},
+		"Persons": {
+			"description": "The global list of Persons instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Actors.Persons" }
+		},
+		"Robots": {
+			"description": "The global list of Robots instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Actors.Robots" }
+		},
+		"Roles": {
+			"description": "The global list of Roles instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Actors.Roles" }
+		},
+		"Teams": {
+			"description": "The global list of Teams instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Actors.Teams" }
+		},
+		"Costs": {
+			"description": "The global list of Costs instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Costs" }
+		},
+		"Salaries": {
+			"description": "The global list of Salaries instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Costs.Salaries" }
+		},
+		"ISDC": {
+			"description": "The global list of ISDC instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/Costs.ISDC" }
+		},
+		"External": {
+			"description": "The global list of External instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/External" }
+		},
+		"CartesianPoint": {
+			"description": "The global list of CartesianPoint instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/External.CartesianPoint" }
+		},
+		"MeasuredQuantity": {
+			"description": "The global list of MeasuredQuantity instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/External.MeasuredQuantity" }
+		},
+		"MeasuredValue": {
+			"description": "The global list of MeasuredValue instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/External.MeasuredValue" }
+		},
+		"IFCObjectReference": {
+			"description": "The global list of IFCObjectReference instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/External.IFCObjectReference" }
+		},
+		"ClassesAndRecordIds": {
+			"description": "The global list of ClassesAndRecordIds instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/External.ClassesAndRecordIds" }
+		},
+		"TeamMember": {
+			"description": "The global list of TeamMember instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/External.TeamMember" }
+		},
+		"Shape": {
+			"description": "The global list of Shape instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/External.Shape" }
+		},
+		"ClassNameReference": {
+			"description": "The global list of ClassNameReference instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/External.ClassNameReference" }
+		},
+		"SampleBase64Binary": {
+			"description": "The global list of SampleBase64Binary instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/External.SampleBase64Binary" }
+		},
+		"RecordInfo": {
+			"description": "The global list of RecordInfo instances.",
+			"type": "array",
+			"items": { "$ref": "#/definitions/External.RecordInfo" }
+		}
+	}
+}
